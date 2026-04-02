@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeLib - Smart Library</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#fdfbfb,#ebedee);
+}
+
+.container{max-width:1300px;margin:auto;padding:20px;}
+
+.header{text-align:center;margin-bottom:30px;}
+.header h1{font-size:2.5em;}
+
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+input{
+    flex:1;
+    padding:15px;
+    border-radius:30px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:15px 25px;
+    border:none;
+    border-radius:30px;
+    background:#667eea;
+    color:white;
+    cursor:pointer;
+}
+
+.genre{
+    margin-bottom:20px;
+}
+
+.genre button{
+    margin:5px;
+    padding:10px 15px;
+    border-radius:20px;
+    border:none;
+    background:#ddd;
+    cursor:pointer;
+}
+
+.genre button.active{
+    background:#667eea;
+    color:white;
+}
+
+.books{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    cursor:pointer;
+}
+
+h2{margin:20px 0;}
+
+.modal{
+    display:none;
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,0.8);
+}
+
+.modal-content{
+    width:90%;
+    height:90%;
+    background:white;
+    margin:2% auto;
+    border-radius:10px;
+}
+
+iframe{
+    width:100%;
+    height:100%;
+    border:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>📚 FreeLib</h1>
+<p>Smart Search • Legal Books • Clean Experience</p>
+</div>
+
+<div class="search-box">
+<input id="search" placeholder="Search anything...">
+<button onclick="searchBooks()">Search</button>
+</div>
+
+<div class="genre" id="genres"></div>
+
+<h2>🔥 Dark Romance Collection</h2>
+<div class="books" id="darkBooks"></div>
+
+<h2>📚 All Books</h2>
+<div class="books" id="books"></div>
+
+</div>
+
+<div class="modal" id="modal" onclick="closeModal()">
+<div class="modal-content">
+<iframe id="frame"></iframe>
+</div>
+</div>
+
+<script>
+
+// 🔥 DARK ROMANCE (REAL)
+const darkRomanceBooks=[
+{title:"Wuthering Heights",author:"Emily Brontë",genre:"dark romance",link:"https://www.gutenberg.org/files/768/768-h/768-h.htm"},
+{title:"Jane Eyre",author:"Charlotte Brontë",genre:"dark romance",link:"https://www.gutenberg.org/files/1260/1260-h/1260-h.htm"},
+{title:"The Phantom of the Opera",author:"Gaston Leroux",genre:"dark romance",link:"https://www.gutenberg.org/files/175/175-h/175-h.htm"},
+{title:"Dracula",author:"Bram Stoker",genre:"dark romance",link:"https://www.gutenberg.org/files/345/345-h/345-h.htm"},
+{title:"Frankenstein",author:"Mary Shelley",genre:"dark romance",link:"https://www.gutenberg.org/files/84/84-h/84-h.htm"},
+{title:"Carmilla",author:"J. Sheridan Le Fanu",genre:"dark romance",link:"https://www.gutenberg.org/files/10007/10007-h/10007-h.htm"},
+{title:"The Picture of Dorian Gray",author:"Oscar Wilde",genre:"dark romance",link:"https://www.gutenberg.org/files/174/174-h/174-h.htm"},
+{title:"The Turn of the Screw",author:"Henry James",genre:"dark romance",link:"https://www.gutenberg.org/files/209/209-h/209-h.htm"},
+{title:"Dr Jekyll and Mr Hyde",author:"Robert Louis Stevenson",genre:"dark romance",link:"https://www.gutenberg.org/files/43/43-h/43-h.htm"},
+{title:"The Monk",author:"Matthew Lewis",genre:"dark romance",link:"https://www.gutenberg.org/files/601/601-h/601-h.htm"}
+];
+
+// 📚 ALL BOOKS (REAL)
+const books=[
+{title:"Pride and Prejudice",author:"Jane Austen",genre:"classic",link:"https://www.gutenberg.org/files/1342/1342-h/1342-h.htm"},
+{title:"Emma",author:"Jane Austen",genre:"classic",link:"https://www.gutenberg.org/files/158/158-h/158-h.htm"},
+{title:"Sense and Sensibility",author:"Jane Austen",genre:"classic",link:"https://www.gutenberg.org/files/161/161-h/161-h.htm"},
+{title:"Great Expectations",author:"Charles Dickens",genre:"classic",link:"https://www.gutenberg.org/files/1400/1400-h/1400-h.htm"},
+{title:"Oliver Twist",author:"Charles Dickens",genre:"classic",link:"https://www.gutenberg.org/files/730/730-h/730-h.htm"},
+{title:"Jane Eyre",author:"Charlotte Brontë",genre:"classic",link:"https://www.gutenberg.org/files/1260/1260-h/1260-h.htm"},
+{title:"Wuthering Heights",author:"Emily Brontë",genre:"classic",link:"https://www.gutenberg.org/files/768/768-h/768-h.htm"},
+{title:"Treasure Island",author:"Robert Louis Stevenson",genre:"fantasy",link:"https://www.gutenberg.org/files/120/120-h/120-h.htm"},
+{title:"Robinson Crusoe",author:"Daniel Defoe",genre:"fantasy",link:"https://www.gutenberg.org/files/521/521-h/521-h.htm"},
+{title:"The Time Machine",author:"H.G. Wells",genre:"scifi",link:"https://www.gutenberg.org/files/35/35-h/35-h.htm"},
+{title:"Sherlock Holmes",author:"Arthur Conan Doyle",genre:"mystery",link:"https://www.gutenberg.org/files/1661/1661-h/1661-h.htm"},
+{title:"Alice in Wonderland",author:"Lewis Carroll",genre:"fantasy",link:"https://www.gutenberg.org/files/11/11-h/11-h.htm"},
+{title:"Dracula",author:"Bram Stoker",genre:"horror",link:"https://www.gutenberg.org/files/345/345-h/345-h.htm"},
+{title:"Frankenstein",author:"Mary Shelley",genre:"horror",link:"https://www.gutenberg.org/files/84/84-h/84-h.htm"}
+];
+
+let current="all";
+
+function loadGenres(){
+    let g=["all","classic","mystery","fantasy","horror"];
+    let box=document.getElementById("genres");
+
+    g.forEach(x=>{
+        let b=document.createElement("button");
+        b.innerText=x;
+        b.onclick=()=>{current=x;searchBooks();};
+        box.appendChild(b);
+    });
+}
+
+function score(text,q){
+    text=text.toLowerCase();
+    q=q.toLowerCase();
+
+    if(text.includes(q)) return 100;
+
+    let s=0;
+    q.split(" ").forEach(w=>{
+        if(text.includes(w)) s+=20;
+    });
+
+    return s;
+}
+
+function searchBooks(){
+    let q=document.getElementById("search").value.trim();
+
+    let result=books
+    .filter(b=> current==="all" || b.genre===current)
+    .map(b=>({...b,score:score(b.title,q)*2 + score(b.author,q)}))
+    .filter(b=>b.score>0 || q==="")
+    .sort((a,b)=>b.score-a.score);
+
+    render(result);
+}
+
+function render(list){
+    let box=document.getElementById("books");
+
+    box.innerHTML=list.map(b=>`
+    <div class="card" onclick="openBook('${b.link}')">
+        <h3>${b.title}</h3>
+        <p>${b.author}</p>
+        <p>${b.genre}</p>
+    </div>
+    `).join("");
+}
+
+function renderDark(){
+    let box=document.getElementById("darkBooks");
+
+    box.innerHTML=darkRomanceBooks.map(b=>`
+    <div class="card" onclick="openBook('${b.link}')">
+        <h3>${b.title}</h3>
+        <p>${b.author}</p>
+        <p>${b.genre}</p>
+    </div>
+    `).join("");
+}
+
+function openBook(link){
+    document.getElementById("modal").style.display="block";
+    document.getElementById("frame").src=link;
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+
+loadGenres();
+renderDark();
+render(books);
+
+</script>
+
+</body>
+</html>
